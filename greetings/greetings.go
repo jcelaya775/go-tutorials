@@ -44,11 +44,12 @@ func randomFormat() string {
 	// A slice of message formats
 	// array of strings: [n]string, where n is the length of the array
 	// slice of strings: []string
-	formats := []string{
+  // A slice are like references to an array
+	formats := []string{ // This creates an array literal of [3]string, and then builds a slice that references it
 		"Hi, %v. Welcome!",
 		"Great to see you, %v!",
 		"Hail, %v! Well met!",
-	}
+}
 
 	return formats[rand.Intn(len(formats))]
 }

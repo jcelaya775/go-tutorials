@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"example.com/greetings"
 )
@@ -23,6 +24,10 @@ func main() {
 		}
 		// If no error was returned, print the returned map of
 		// messages to the console.
-		fmt.Println(messages, "\n")
+		fmt.Println(messages)
 	}
+
+  x := [4]int{1, 2, 3, 4}
+  fmt.Printf("%T\n", x)
+  fmt.Println(x)
 }
