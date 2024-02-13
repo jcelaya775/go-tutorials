@@ -1,9 +1,9 @@
 package main
 
 import (
-  "fmt"
-  "strings"
-  "math"
+	"fmt"
+	"math"
+	"strings"
 )
 
 func main() {
@@ -23,6 +23,26 @@ func main() {
 
   fmt.Println(compute(hypot))
   fmt.Println(compute(math.Pow))
+  fmt.Println()
+
+  x := 144.0
+  fmt.Printf("Guessing the square root of %v...\n", x)
+  fmt.Println(Sqrt(x))
+}
+
+func Sqrt(x float64) float64 {
+  z := 1.0
+  actualRoot := math.Sqrt(x)
+
+  for math.Abs((z - actualRoot)) > 0.1 {
+    fmt.Println("z: ", z)
+    fmt.Println("diff =", math.Abs((z - actualRoot)))
+    z -= (z*z - x) / (2*z)
+  }
+
+  fmt.Println("final value of z:", z)
+
+  return z
 }
 
 func ticTacToe() {
