@@ -28,21 +28,33 @@ func main() {
   x := 144.0
   fmt.Printf("Guessing the square root of %v...\n", x)
   fmt.Println(Sqrt(x))
+
+  // Print return value(s) (aka tuple of values)
+  fmt.Println(Sqrt(2))
+  fmt.Println(Sqrt(-2))
 }
 
-func Sqrt(x float64) float64 {
-  z := 1.0
-  actualRoot := math.Sqrt(x)
+type ErrNegativeSqrt float64
 
-  for math.Abs((z - actualRoot)) > 0.1 {
-    fmt.Println("z: ", z)
-    fmt.Println("diff =", math.Abs((z - actualRoot)))
+func (e ErrNegativeSqrt) Error() string {
+  // NOTE: If you don't convert e to float64 explicitly, then ->
+  // Sprintf returns the format specifier of its arguments. So,
+  // returning ErrNegativeSqrt will recall this method indefinitely
+  // b/c this method is the format specifier for ErrNegativeSqrt
+  return fmt.Sprintf("Cannot Sqrt negative number: %v", float64(e))
+}
+
+func Sqrt(x float64) (float64, error) {
+  if x < 0 {
+    return 0, ErrNegativeSqrt(x)
+  }
+
+  z := 1.0
+  for i := 0; i < 10; i++ {
     z -= (z*z - x) / (2*z)
   }
 
-  fmt.Println("final value of z:", z)
-
-  return z
+  return z, nil
 }
 
 func ticTacToe() {
@@ -78,8 +90,7 @@ func WordCount(s string) map[string]int {
   wordCount := make(map[string]int)
   for _, word := range strings.Fields(s) {
     count := wordCount[word]
-    count += 1
-    wordCount[word] = count
+    wordCount[word] = count + 1
   }
 
   return wordCount
@@ -87,4 +98,29 @@ func WordCount(s string) map[string]int {
 
 func compute(fn func(float64, float64) float64) float64 {
   return fn(3, 4)
+}
+
+type IPAddr [4]byte
+
+// TODO: Add a "String() string" method to IPAddr.
+
+// NOTE: This is how the Stringer interface is implemented
+// type Stringer interface {
+//   String() string
+// }
+
+// For instance, IPAddr{1, 2, 3, 4} should print as "1.2.3.4".
+func (ip IPAddr) String() string {
+  return fmt.Sprintf("%v.%v.%v.%v", ip[0], ip[1], ip[2], ip[3])
+}
+
+type MyReader struct{}
+
+// TODO: Add a Read([]byte) (int, error) method to MyReader.
+func (reader MyReader) Read(b []byte) (int, error) {
+  for i := range b {
+    b[i] = 65
+  }
+
+  return len(b), nil
 }
