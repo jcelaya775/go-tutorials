@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"math"
-	"os"
 	"strings"
 )
 
@@ -35,9 +34,14 @@ func main() {
 	fmt.Println(Sqrt(2))
 	fmt.Println(Sqrt(-2))
 
+	// A Reader populates a byte slice with data.
+	myBuffer := make([]byte, 25)
 	s := strings.NewReader("Lbh penpxrq gur pbqr!")
 	r := rot13Reader{s}
-	io.Copy(os.Stdout, &r)
+
+	n, err := r.Read(myBuffer)
+	fmt.Printf("n = %v err = %v\n", n, err)
+	fmt.Printf("result: %v", string(myBuffer))
 }
 
 type ErrNegativeSqrt float64
@@ -108,13 +112,6 @@ func compute(fn func(float64, float64) float64) float64 {
 
 type IPAddr [4]byte
 
-// TODO: Add a "String() string" method to IPAddr.
-
-// NOTE: This is how the Stringer interface is implemented
-// type Stringer interface {
-//   String() string
-// }
-
 // For instance, IPAddr{1, 2, 3, 4} should print as "1.2.3.4".
 func (ip IPAddr) String() string {
 	return fmt.Sprintf("%v.%v.%v.%v", ip[0], ip[1], ip[2], ip[3])
@@ -122,13 +119,15 @@ func (ip IPAddr) String() string {
 
 type MyReader struct{}
 
-// TODO: Add a Read([]byte) (int, error) method to MyReader.
 func (reader MyReader) Read(b []byte) (int, error) {
-	for i := range b {
-		b[i] = 65
-	}
-
+	populateBytes(b)
 	return len(b), nil
+}
+
+func populateBytes(b []byte) {
+	for i := range b {
+		b[i] = byte('A')
+	}
 }
 
 type rot13Reader struct {
@@ -142,31 +141,37 @@ type rot13Reader struct {
 // implementation details that you have to remember as you move in and out of functions in order to
 // tie things together.
 func (rot13 rot13Reader) Read(b []byte) (n int, err error) {
-	rot13ModifiedBytes := getRot13ModifiedBytes(b)
-	return rot13.r.Read(rot13ModifiedBytes)
+	n, err = rot13.r.Read(b)
+	rot13ModifyBuffer(b)
+
+	return
 }
 
-func getRot13ModifiedBytes(chars []byte) []byte {
-	rot13ModifiedBytes := make([]byte, len(chars))
-	for i, char := range chars {
-		rot13ModifiedBytes[i] = getModifiedByte(char)
+// This function strikes a good balance. While there are two levels of abstraction (populating
+// the rot13ModifiedBytes slice and deciding how to populate each byte), hence breaking Clean code's
+// "functions should only do one thing" rule, it provides a better meaning of what is actually going on,
+// imo, than if you were to abstract the if statement away.
+
+// This is good right now b/c that's all there is to this problem as of now. However, if we have
+// to add more complicated functionality, it makes sense to break the problem down into smaller
+// components. But doing that now would be excessive and more confusing.
+func rot13ModifyBuffer(b []byte) {
+	for i, char := range b {
+		if isAlphabetical(char) {
+			rot13ModifyByte(&char)
+		}
+		b[i] = char
 	}
-
-	return rot13ModifiedBytes
 }
 
-func getModifiedByte(char byte) byte {
-	if isAlphabetical(char) {
-		return getRot13Byte(char)
-	} else {
-		return char
-	}
-}
-
-func getRot13Byte(char byte) byte {
-	baseByte := getBaseChar(char)
-	relativeByte := getRelativeChar(baseByte, char)
-	return baseByte + ((relativeByte + 13) % 26)
+// This level of abstraction feels good to me. I know for sure that the problem is broken down into
+// its individual components without a contributor potentially having to refactor the code to add
+// or change functionality while having the benefit of being able to find exactly the part they
+// are changing.
+func rot13ModifyByte(char *byte) {
+	baseByte := getBaseChar(*char)
+	relativeByte := getRelativeChar(baseByte, *char)
+	*char = baseByte + ((relativeByte + 13) % 26)
 }
 
 func getBaseAndRelativeBytes(char byte) (byte, byte) {
