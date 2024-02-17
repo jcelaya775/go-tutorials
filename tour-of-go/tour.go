@@ -134,41 +134,22 @@ type rot13Reader struct {
 	r io.Reader
 }
 
-// NOTE: Uncle Bob's way of doing it. Too much? (it certainly seems to take longer to code this way)
-// Maybe code can code read *too* much like english b/c it loses all of its implementation details.
-// Plus, it's a lot to keep in your head when reading the code. When you want to see how the code
-// technically works in the bigger picture, your mind starts to become like a stack that holds
-// implementation details that you have to remember as you move in and out of functions in order to
-// tie things together.
 func (rot13 rot13Reader) Read(b []byte) (n int, err error) {
 	n, err = rot13.r.Read(b)
-	rot13ModifyBuffer(b)
-
+	rot13TransformBuffer(b)
 	return
 }
 
-// This function strikes a good balance. While there are two levels of abstraction (populating
-// the rot13ModifiedBytes slice and deciding how to populate each byte), hence breaking Clean code's
-// "functions should only do one thing" rule, it provides a better meaning of what is actually going on,
-// imo, than if you were to abstract the if statement away.
-
-// This is good right now b/c that's all there is to this problem as of now. However, if we have
-// to add more complicated functionality, it makes sense to break the problem down into smaller
-// components. But doing that now would be excessive and more confusing.
-func rot13ModifyBuffer(b []byte) {
+func rot13TransformBuffer(b []byte) {
 	for i, char := range b {
 		if isAlphabetical(char) {
-			rot13ModifyByte(&char)
+			rot13TransformByte(&char)
 		}
 		b[i] = char
 	}
 }
 
-// This level of abstraction feels good to me. I know for sure that the problem is broken down into
-// its individual components without a contributor potentially having to refactor the code to add
-// or change functionality while having the benefit of being able to find exactly the part they
-// are changing.
-func rot13ModifyByte(char *byte) {
+func rot13TransformByte(char *byte) {
 	baseByte := getBaseChar(*char)
 	relativeByte := getRelativeChar(baseByte, *char)
 	*char = baseByte + ((relativeByte + 13) % 26)
