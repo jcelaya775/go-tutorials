@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"math"
+	"os"
 	"strings"
 )
 
@@ -32,6 +34,10 @@ func main() {
 	// Print return value(s) (aka tuple of values)
 	fmt.Println(Sqrt(2))
 	fmt.Println(Sqrt(-2))
+
+	s := strings.NewReader("Lbh penpxrq gur pbqr!")
+	r := rot13Reader{s}
+	io.Copy(os.Stdout, &r)
 }
 
 type ErrNegativeSqrt float64
@@ -123,4 +129,72 @@ func (reader MyReader) Read(b []byte) (int, error) {
 	}
 
 	return len(b), nil
+}
+
+type rot13Reader struct {
+	r io.Reader
+}
+
+// NOTE: Uncle Bob's way of doing it. Too much? (it certainly seems to take longer to code this way)
+// Maybe code can code read *too* much like english b/c it loses all of its implementation details.
+// Plus, it's a lot to keep in your head when reading the code. When you want to see how the code
+// technically works in the bigger picture, your mind starts to become like a stack that holds
+// implementation details that you have to remember as you move in and out of functions in order to
+// tie things together.
+func (rot13 rot13Reader) Read(b []byte) (n int, err error) {
+	rot13ModifiedBytes := getRot13ModifiedBytes(b)
+	return rot13.r.Read(rot13ModifiedBytes)
+}
+
+func getRot13ModifiedBytes(chars []byte) []byte {
+	rot13ModifiedBytes := make([]byte, len(chars))
+	for i, char := range chars {
+		rot13ModifiedBytes[i] = getModifiedByte(char)
+	}
+
+	return rot13ModifiedBytes
+}
+
+func getModifiedByte(char byte) byte {
+	if isAlphabetical(char) {
+		return getRot13Byte(char)
+	} else {
+		return char
+	}
+}
+
+func getRot13Byte(char byte) byte {
+	baseByte := getBaseChar(char)
+	relativeByte := getRelativeChar(baseByte, char)
+	return baseByte + ((relativeByte + 13) % 26)
+}
+
+func getBaseAndRelativeBytes(char byte) (byte, byte) {
+	baseChar := getBaseChar(char)
+	relativeChar := getRelativeChar(baseChar, char)
+	return baseChar, relativeChar
+}
+
+func getBaseChar(char byte) byte {
+	if isUpperCase(char) {
+		return byte('A')
+	} else {
+		return byte('a')
+	}
+}
+
+func getRelativeChar(baseChar byte, absoluteChar byte) byte {
+	return absoluteChar - baseChar
+}
+
+func isAlphabetical(char byte) bool {
+	return (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z')
+}
+
+func isUpperCase(char byte) bool {
+	return char >= 'A' && char <= 'Z'
+}
+
+func isLowerCase(char byte) bool {
+	return char >= 'a' && char <= 'z'
 }
