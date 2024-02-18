@@ -43,7 +43,22 @@ func main() {
 
 	n, err := r.Read(myBuffer)
 	fmt.Printf("n = %v err = %v\n", n, err)
-	fmt.Printf("result: %v", string(myBuffer))
+	fmt.Printf("result: %v\n", string(myBuffer))
+
+	numbers := []int{10, 20, 15, -10}
+	fmt.Println(Index(numbers, 10))
+
+	words := []string{"foo", "bar", "obi-wan"}
+	fmt.Println(Index(words, "obi-wan"))
+
+	intLinkedListHead := createLinkedListFromSlice([]int{1, 2, 3, 4, 5})
+	printLinkedList[int](intLinkedListHead)
+	printLinkedList[int](intLinkedListHead)
+
+	stringLinkedListHead := createLinkedListFromSlice([]string{"hello", "there", "obi-wan", "kenobi"})
+	printLinkedList[string](stringLinkedListHead)
+	printLinkedList[string](stringLinkedListHead)
+
 }
 
 type ErrNegativeSqrt float64
@@ -217,4 +232,48 @@ func (i Image) Bounds() image.Rectangle {
 
 func (i Image) At(x, y int) color.Color {
 	return color.RGBA{uint8(x + y), uint8(x ^ y), 255, 255}
+}
+
+// Type parameters -> type params appear in brackets before the func arguments, but after its name.
+// They allow for the multiple types to satisfy the parameter types, so long as said type satisfies
+// the type constraint (the thing that comes after each type parameter is called a type constraint).
+
+// Index returns the index of x in s, or -1 if not found.
+func Index[T comparable](s []T, x T) int {
+	for i, v := range s {
+		if x == v {
+			return i
+		}
+	}
+	return -1
+}
+
+// Generic types -> types can be parameterized with a type parameter, allowing for any type of value.
+
+// List represents a singly-linked list that holds values of any type.
+type List[T any] struct {
+	val  T
+	next *List[T]
+}
+
+// This function creates the following linked list and returns its head:
+// 1 -> 2 -> 3 -> 4 -> 5 -> nil
+func createLinkedListFromSlice[T any](values []T) *List[T] {
+	dummyNode := &List[T]{}
+	currentNode := dummyNode
+	for _, value := range values {
+		currentNode.next = &List[T]{val: value, next: nil}
+		currentNode = currentNode.next
+	}
+
+	return dummyNode.next
+}
+
+func printLinkedList[T any](head *List[T]) {
+	currentNode := head // copy the head ptr, so we don't lose the head
+	for currentNode != nil {
+		fmt.Printf("%v -> ", currentNode.val)
+		currentNode = currentNode.next
+	}
+	fmt.Println("nil")
 }
