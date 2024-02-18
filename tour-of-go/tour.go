@@ -58,7 +58,6 @@ func main() {
 	stringLinkedListHead := createLinkedListFromSlice([]string{"hello", "there", "obi-wan", "kenobi"})
 	printLinkedList[string](stringLinkedListHead)
 	printLinkedList[string](stringLinkedListHead)
-
 }
 
 type ErrNegativeSqrt float64
@@ -157,9 +156,11 @@ type rot13Reader struct {
 // technically works in the bigger picture, your mind starts to become like a stack that holds
 // implementation details that you have to remember as you move in and out of functions in order to
 // tie things together.
+
+// Read reads from the underlying reader and modifies the buffer that was read using the rot13 algorithm.
 func (rot13 rot13Reader) Read(b []byte) (n int, err error) {
 	n, err = rot13.r.Read(b)
-	rot13TransformBuffer(b)
+	rot13ModifyBuffer(b)
 	return
 }
 
@@ -171,10 +172,12 @@ func (rot13 rot13Reader) Read(b []byte) (n int, err error) {
 // This is good right now b/c that's all there is to this problem as of now. However, if we have
 // to add more complicated functionality, it makes sense to break the problem down into smaller
 // components. But doing that now would be excessive and more confusing.
-func rot13TransformBuffer(b []byte) {
+
+// rot13ModifyBuffer takes a slice of bytes and transforms each alphabetical byte using the rot13 algorithm.
+func rot13ModifyBuffer(b []byte) {
 	for i, char := range b {
 		if isAlphabetical(char) {
-			rot13TransformByte(&char)
+			char = getRot13Byte(char)
 		}
 		b[i] = char
 	}
@@ -184,19 +187,19 @@ func rot13TransformBuffer(b []byte) {
 // its individual components without a contributor potentially having to refactor the code to add
 // or change functionality while having the benefit of being able to find exactly the part they
 // are changing.
-func rot13TransformByte(char *byte) {
-	baseByte := getBaseChar(*char)
-	relativeByte := getRelativeChar(baseByte, *char)
-	*char = baseByte + ((relativeByte + 13) % 26)
+
+const ALPHABET_LENGTH byte = 26
+const ROT13_OFFSET byte = 13
+
+var absoluteLetterOffset byte
+
+func getRot13Byte(originalLetter byte) byte {
+	absoluteLetterOffset = getBaseLetter(originalLetter)
+	relativeLetter := getRelativeLetter(originalLetter)
+	return ((relativeLetter + ROT13_OFFSET) % ALPHABET_LENGTH) + absoluteLetterOffset
 }
 
-func getBaseAndRelativeBytes(char byte) (byte, byte) {
-	baseChar := getBaseChar(char)
-	relativeChar := getRelativeChar(baseChar, char)
-	return baseChar, relativeChar
-}
-
-func getBaseChar(char byte) byte {
+func getBaseLetter(char byte) byte {
 	if isUpperCase(char) {
 		return byte('A')
 	} else {
@@ -204,8 +207,8 @@ func getBaseChar(char byte) byte {
 	}
 }
 
-func getRelativeChar(baseChar byte, absoluteChar byte) byte {
-	return absoluteChar - baseChar
+func getRelativeLetter(absoluteLetter byte) byte {
+	return absoluteLetter - absoluteLetterOffset
 }
 
 func isAlphabetical(char byte) bool {
