@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"io"
+	// "io"
 	"math"
 	"strings"
 )
@@ -39,9 +39,9 @@ func main() {
 	// A Reader populates a byte slice with data.
 	myBuffer := make([]byte, 25)
 	s := strings.NewReader("Lbh penpxrq gur pbqr!")
-	r := rot13Reader{s}
+	rot13 := rot13Reader{s}
 
-	n, err := r.Read(myBuffer)
+	n, err := rot13.Read(myBuffer)
 	fmt.Printf("n = %v err = %v\n", n, err)
 	fmt.Printf("result: %v\n", string(myBuffer))
 
@@ -146,82 +146,82 @@ func populateBytes(b []byte) {
 	}
 }
 
-type rot13Reader struct {
-	r io.Reader
-}
-
-// NOTE: Uncle Bob's way of doing it. Too much? (it certainly seems to take longer to code this way)
-// Maybe code can code read *too* much like english b/c it loses all of its implementation details.
-// Plus, it's a lot to keep in your head when reading the code. When you want to see how the code
-// technically works in the bigger picture, your mind starts to become like a stack that holds
-// implementation details that you have to remember as you move in and out of functions in order to
-// tie things together.
-
-// Read reads from the underlying reader and modifies the buffer that was read using the rot13 algorithm.
-func (rot13 rot13Reader) Read(b []byte) (n int, err error) {
-	n, err = rot13.r.Read(b)
-	rot13ModifyBuffer(b)
-	return
-}
-
-// This function strikes a good balance. While there are two levels of abstraction (populating
-// the rot13ModifiedBytes slice and deciding how to populate each byte), hence breaking Clean code's
-// "functions should only do one thing" rule, it provides a better meaning of what is actually going on,
-// imo, than if you were to abstract the if statement away.
-
-// This is good right now b/c that's all there is to this problem as of now. However, if we have
-// to add more complicated functionality, it makes sense to break the problem down into smaller
-// components. But doing that now would be excessive and more confusing.
-
-// rot13ModifyBuffer takes a slice of bytes and transforms each alphabetical byte using the rot13 algorithm.
-func rot13ModifyBuffer(b []byte) {
-	for i, char := range b {
-		if isAlphabetical(char) {
-			char = getRot13Byte(char)
-		}
-		b[i] = char
-	}
-}
-
-// This level of abstraction feels good to me. I know for sure that the problem is broken down into
-// its individual components without a contributor potentially having to refactor the code to add
-// or change functionality while having the benefit of being able to find exactly the part they
-// are changing.
-
-const ALPHABET_LENGTH byte = 26
-const ROT13_OFFSET byte = 13
-
-var absoluteLetterOffset byte
-
-func getRot13Byte(originalLetter byte) byte {
-	absoluteLetterOffset = getBaseLetter(originalLetter)
-	relativeLetter := getRelativeLetter(originalLetter)
-	return ((relativeLetter + ROT13_OFFSET) % ALPHABET_LENGTH) + absoluteLetterOffset
-}
-
-func getBaseLetter(char byte) byte {
-	if isUpperCase(char) {
-		return byte('A')
-	} else {
-		return byte('a')
-	}
-}
-
-func getRelativeLetter(absoluteLetter byte) byte {
-	return absoluteLetter - absoluteLetterOffset
-}
-
-func isAlphabetical(char byte) bool {
-	return (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z')
-}
-
-func isUpperCase(char byte) bool {
-	return char >= 'A' && char <= 'Z'
-}
-
-func isLowerCase(char byte) bool {
-	return char >= 'a' && char <= 'z'
-}
+// type rot13Reader struct {
+// 	r io.Reader
+// }
+//
+// // NOTE: Uncle Bob's way of doing it. Too much? (it certainly seems to take longer to code this way)
+// // Maybe code can code read *too* much like english b/c it loses all of its implementation details.
+// // Plus, it's a lot to keep in your head when reading the code. When you want to see how the code
+// // technically works in the bigger picture, your mind starts to become like a stack that holds
+// // implementation details that you have to remember as you move in and out of functions in order to
+// // tie things together.
+//
+// // Read reads from the underlying reader and modifies the buffer that was read using the rot13 algorithm.
+// func (rot13 rot13Reader) Read(b []byte) (n int, err error) {
+// 	n, err = rot13.r.Read(b)
+// 	rot13ModifyBuffer(b)
+// 	return
+// }
+//
+// // This function strikes a good balance. While there are two levels of abstraction (populating
+// // the rot13ModifiedBytes slice and deciding how to populate each byte), hence breaking Clean code's
+// // "functions should only do one thing" rule, it provides a better meaning of what is actually going on,
+// // imo, than if you were to abstract the if statement away.
+//
+// // This is good right now b/c that's all there is to this problem as of now. However, if we have
+// // to add more complicated functionality, it makes sense to break the problem down into smaller
+// // components. But doing that now would be excessive and more confusing.
+//
+// // rot13ModifyBuffer takes a slice of bytes and transforms each alphabetical byte using the rot13 algorithm.
+// func rot13ModifyBuffer(b []byte) {
+// 	for i, char := range b {
+// 		if isAlphabetical(char) {
+// 			char = getRot13Byte(char)
+// 		}
+// 		b[i] = char
+// 	}
+// }
+//
+// // This level of abstraction feels good to me. I know for sure that the problem is broken down into
+// // its individual components without a contributor potentially having to refactor the code to add
+// // or change functionality while having the benefit of being able to find exactly the part they
+// // are changing.
+//
+// const ALPHABET_LENGTH byte = 26
+// const ROT13_OFFSET byte = 13
+//
+// var absoluteLetterOffset byte
+//
+// func getRot13Byte(originalLetter byte) byte {
+// 	absoluteLetterOffset = getBaseLetter(originalLetter)
+// 	relativeLetter := getRelativeLetter(originalLetter)
+// 	return ((relativeLetter + ROT13_OFFSET) % ALPHABET_LENGTH) + absoluteLetterOffset
+// }
+//
+// func getBaseLetter(char byte) byte {
+// 	if isUpperCase(char) {
+// 		return byte('A')
+// 	} else {
+// 		return byte('a')
+// 	}
+// }
+//
+// func getRelativeLetter(absoluteLetter byte) byte {
+// 	return absoluteLetter - absoluteLetterOffset
+// }
+//
+// func isAlphabetical(char byte) bool {
+// 	return (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z')
+// }
+//
+// func isUpperCase(char byte) bool {
+// 	return char >= 'A' && char <= 'Z'
+// }
+//
+// func isLowerCase(char byte) bool {
+// 	return char >= 'a' && char <= 'z'
+// }
 
 type Image struct{}
 
