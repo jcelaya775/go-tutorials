@@ -6,44 +6,47 @@ type rot13Reader struct {
 	r io.Reader
 }
 
+const (
+	ALPHABET_LENGTH byte = 26
+	ROT13_OFFSET    byte = 13
+)
+
+var asciiByteOffset byte
+
 // Read reads from the underlying reader and modifies the buffer that was read using the rot13 algorithm.
-func (rot13 rot13Reader) Read(b []byte) (n int, err error) {
-	n, err = rot13.r.Read(b)
-	rot13ModifyBuffer(b)
+func (rot13 rot13Reader) Read(asciiBuffer []byte) (n int, err error) {
+	n, err = rot13.r.Read(asciiBuffer)
+	rot13ModifyAsciiBuffer(asciiBuffer)
 	return
 }
 
-// rot13ModifyBuffer takes a slice of bytes and transforms each alphabetical byte using the rot13 algorithm.
-func rot13ModifyBuffer(b []byte) {
-	for i, char := range b {
-		if isAlphabetical(char) {
-			char = getRot13Byte(char)
+// rot13ModifyAsciiBuffer takes a slice of bytes and transforms each alphabetical byte using the rot13 algorithm.
+func rot13ModifyAsciiBuffer(asciiBuffer []byte) {
+	for i, asciiByte := range asciiBuffer {
+		if isAlphabetical(asciiByte) {
+			asciiByte = getRot13AsciiByte(asciiByte)
 		}
-		b[i] = char
+		asciiBuffer[i] = asciiByte
 	}
 }
 
-const ALPHABET_LENGTH byte = 26
-const ROT13_OFFSET byte = 13
-
-var absoluteLetterOffset byte
-
-func getRot13Byte(originalLetter byte) byte {
-	absoluteLetterOffset = getBaseLetter(originalLetter)
-	relativeLetter := getRelativeLetter(originalLetter)
-	return ((relativeLetter + ROT13_OFFSET) % ALPHABET_LENGTH) + absoluteLetterOffset
+func getRot13AsciiByte(originalAsciiByte byte) byte {
+	setAsciiByteOffset(originalAsciiByte)
+	return getRot13AsciiByteCalculationResult(originalAsciiByte)
 }
 
-func getBaseLetter(char byte) byte {
-	if isUpperCase(char) {
-		return byte('A')
+func setAsciiByteOffset(asciiByte byte) {
+	if isUpperCase(asciiByte) {
+		asciiByteOffset = byte('A')
 	} else {
-		return byte('a')
+		asciiByteOffset = byte('a')
 	}
 }
 
-func getRelativeLetter(absoluteLetter byte) byte {
-	return absoluteLetter - absoluteLetterOffset
+func getRot13AsciiByteCalculationResult(originalAsciiByte byte) byte {
+	relativeRot13AsciiByte := (originalAsciiByte + ROT13_OFFSET) % ALPHABET_LENGTH
+	actualRot13AsciiByte := relativeRot13AsciiByte + asciiByteOffset
+	return actualRot13AsciiByte
 }
 
 func isAlphabetical(char byte) bool {
