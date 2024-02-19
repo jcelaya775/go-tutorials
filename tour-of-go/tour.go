@@ -19,6 +19,7 @@ func main() {
 	fmt.Println(WordCount("hello there world"))
 	fmt.Println()
 
+	fmt.Println("\nFunctions:")
 	hypot := func(x, y float64) float64 {
 		return math.Sqrt(x*x + y*y)
 	}
@@ -41,23 +42,45 @@ func main() {
 	s := strings.NewReader("Lbh penpxrq gur pbqr!")
 	rot13 := rot13Reader{s}
 
+	fmt.Println("\nrot13Reader:")
 	n, err := rot13.Read(myBuffer)
 	fmt.Printf("n = %v err = %v\n", n, err)
 	fmt.Printf("result: %v\n", string(myBuffer))
 
+	fmt.Println()
 	numbers := []int{10, 20, 15, -10}
 	fmt.Println(Index(numbers, 10))
 
 	words := []string{"foo", "bar", "obi-wan"}
 	fmt.Println(Index(words, "obi-wan"))
 
+	fmt.Println("\nLinked lists:")
 	intLinkedListHead := createLinkedListFromSlice([]int{1, 2, 3, 4, 5})
 	printLinkedList[int](intLinkedListHead)
 	printLinkedList[int](intLinkedListHead)
 
-	stringLinkedListHead := createLinkedListFromSlice([]string{"hello", "there", "obi-wan", "kenobi"})
+	stringLinkedListHead := createLinkedListFromSlice([]string{"you're", "the", "chosen", "one", "obi-wan", "kenobi"})
 	printLinkedList[string](stringLinkedListHead)
 	printLinkedList[string](stringLinkedListHead)
+	fmt.Println()
+
+	fmt.Println("Goroutines:")
+	go say("world")
+	say("hello")
+	fmt.Println()
+
+	nums := []int{7, 2, 8, -9, 4, 0}
+
+	fmt.Println("Distributing workload between two goroutines...")
+	// By default, sends and receives block until the other side is ready
+	// i.e, myVar <- c (receive) waits for to something to send to c: c <- value, and vice-versa
+	c := make(chan int)
+	// Distribute two halves of the work between two goroutines & calculate final result
+	go sum(nums[:len(nums)/2], c)
+	go sum(nums[len(nums)/2:], c)
+	secondHalf, firstHalf := <-c, <-c // receive from c
+	fmt.Printf("firstHalf: %v, secondHalf: %v, firstHalf + secondHalf = %v",
+		firstHalf, secondHalf, firstHalf+secondHalf)
 }
 
 type ErrNegativeSqrt float64
