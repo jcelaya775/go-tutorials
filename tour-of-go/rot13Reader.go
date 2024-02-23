@@ -20,7 +20,6 @@ func (rot13 rot13Reader) Read(asciiBuffer []byte) (n int, err error) {
 	return
 }
 
-// rot13ModifyAsciiBuffer takes a slice of bytes and transforms each alphabetical byte using the rot13 algorithm.
 func rot13ModifyAsciiBuffer(asciiBuffer []byte) {
 	for i, asciiByte := range asciiBuffer {
 		if isAlphabetical(asciiByte) {
@@ -30,9 +29,13 @@ func rot13ModifyAsciiBuffer(asciiBuffer []byte) {
 	}
 }
 
+func isAlphabetical(char byte) bool {
+	return (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z')
+}
+
 func getRot13AsciiByte(originalAsciiByte byte) byte {
 	setAsciiByteOffset(originalAsciiByte)
-	return getRot13AsciiByteCalculationResult(originalAsciiByte)
+	return getRot13AsciiByteCalculation(originalAsciiByte)
 }
 
 func setAsciiByteOffset(asciiByte byte) {
@@ -43,20 +46,12 @@ func setAsciiByteOffset(asciiByte byte) {
 	}
 }
 
-func getRot13AsciiByteCalculationResult(originalAsciiByte byte) byte {
-	relativeRot13AsciiByte := (originalAsciiByte + ROT13_OFFSET) % ALPHABET_LENGTH
-	actualRot13AsciiByte := relativeRot13AsciiByte + asciiByteOffset
-	return actualRot13AsciiByte
-}
-
-func isAlphabetical(char byte) bool {
-	return (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z')
-}
-
 func isUpperCase(char byte) bool {
 	return char >= 'A' && char <= 'Z'
 }
 
-func isLowerCase(char byte) bool {
-	return char >= 'a' && char <= 'z'
+func getRot13AsciiByteCalculation(originalAsciiByte byte) byte {
+	relativeRot13AsciiByte := (originalAsciiByte + ROT13_OFFSET) % ALPHABET_LENGTH
+	actualRot13AsciiByte := relativeRot13AsciiByte + asciiByteOffset
+	return actualRot13AsciiByte
 }
