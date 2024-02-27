@@ -72,15 +72,47 @@ func main() {
 	nums := []int{7, 2, 8, -9, 4, 0}
 
 	fmt.Println("Distributing workload between two goroutines...")
-	// By default, sends and receives block until the other side is ready
 	// i.e, myVar <- c (receive) waits for to something to send to c: c <- value, and vice-versa
 	c := make(chan int)
 	// Distribute two halves of the work between two goroutines & calculate final result
 	go sum(nums[:len(nums)/2], c)
 	go sum(nums[len(nums)/2:], c)
+	// By default, sends and receives block until the other side is ready, allowing for synchronization
 	secondHalf, firstHalf := <-c, <-c // receive from c
 	fmt.Printf("firstHalf: %v, secondHalf: %v, firstHalf + secondHalf = %v",
 		firstHalf, secondHalf, firstHalf+secondHalf)
+
+	fmt.Println("\n\nbufferedChannelsExample:")
+	bufferedChannelsExample()
+
+	// Test whether a channel has been closed
+	// v, ok := <-ch
+	// Receieve values from channel repeatedly until channel is closed
+	// for i := range ch
+
+	fmt.Println("\nFibonacci sequence:")
+	ch := make(chan int)
+	// NOTE: Must initiate a goroutine for fibonacci function to be able to send to channel
+	go fibonacci(10, ch)
+	for i := range ch {
+		fmt.Println(i)
+	}
+
+	// Select
+	fmt.Println("\nFibonacci sequence with select block:")
+	channel := make(chan int)
+	quit := make(chan int)
+	go func() {
+		for i := 0; i < 10; i++ {
+			fmt.Println(<-channel)
+		}
+		// At this point, c will not receieve any more values from the fibonacciSelect function
+		quit <- 0 // So, only the quit case will be executed
+	}()
+	fibonacciSelect(channel, quit)
+
+	fmt.Println("\nDefault selection ticking time bomb:")
+	defaultSelectionExample()
 }
 
 type ErrNegativeSqrt float64
@@ -168,83 +200,6 @@ func populateBytes(b []byte) {
 		b[i] = byte('A')
 	}
 }
-
-// type rot13Reader struct {
-// 	r io.Reader
-// }
-//
-// // NOTE: Uncle Bob's way of doing it. Too much? (it certainly seems to take longer to code this way)
-// // Maybe code can code read *too* much like english b/c it loses all of its implementation details.
-// // Plus, it's a lot to keep in your head when reading the code. When you want to see how the code
-// // technically works in the bigger picture, your mind starts to become like a stack that holds
-// // implementation details that you have to remember as you move in and out of functions in order to
-// // tie things together.
-//
-// // Read reads from the underlying reader and modifies the buffer that was read using the rot13 algorithm.
-// func (rot13 rot13Reader) Read(b []byte) (n int, err error) {
-// 	n, err = rot13.r.Read(b)
-// 	rot13ModifyBuffer(b)
-// 	return
-// }
-//
-// // This function strikes a good balance. While there are two levels of abstraction (populating
-// // the rot13ModifiedBytes slice and deciding how to populate each byte), hence breaking Clean code's
-// // "functions should only do one thing" rule, it provides a better meaning of what is actually going on,
-// // imo, than if you were to abstract the if statement away.
-//
-// // This is good right now b/c that's all there is to this problem as of now. However, if we have
-// // to add more complicated functionality, it makes sense to break the problem down into smaller
-// // components. But doing that now would be excessive and more confusing.
-//
-// // rot13ModifyBuffer takes a slice of bytes and transforms each alphabetical byte using the rot13 algorithm.
-// func rot13ModifyBuffer(b []byte) {
-// 	for i, char := range b {
-// 		if isAlphabetical(char) {
-// 			char = getRot13Byte(char)
-// 		}
-// 		b[i] = char
-// 	}
-// }
-//
-// // This level of abstraction feels good to me. I know for sure that the problem is broken down into
-// // its individual components without a contributor potentially having to refactor the code to add
-// // or change functionality while having the benefit of being able to find exactly the part they
-// // are changing.
-//
-// const ALPHABET_LENGTH byte = 26
-// const ROT13_OFFSET byte = 13
-//
-// var absoluteLetterOffset byte
-//
-// func getRot13Byte(originalLetter byte) byte {
-// 	absoluteLetterOffset = getBaseLetter(originalLetter)
-// 	relativeLetter := getRelativeLetter(originalLetter)
-// 	return ((relativeLetter + ROT13_OFFSET) % ALPHABET_LENGTH) + absoluteLetterOffset
-// }
-//
-// func getBaseLetter(char byte) byte {
-// 	if isUpperCase(char) {
-// 		return byte('A')
-// 	} else {
-// 		return byte('a')
-// 	}
-// }
-//
-// func getRelativeLetter(absoluteLetter byte) byte {
-// 	return absoluteLetter - absoluteLetterOffset
-// }
-//
-// func isAlphabetical(char byte) bool {
-// 	return (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z')
-// }
-//
-// func isUpperCase(char byte) bool {
-// 	return char >= 'A' && char <= 'Z'
-// }
-//
-// func isLowerCase(char byte) bool {
-// 	return char >= 'a' && char <= 'z'
-// }
 
 type Image struct{}
 
