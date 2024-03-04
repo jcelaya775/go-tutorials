@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"golang.org/x/tour/tree"
 	"image"
 	"image/color"
-	// "io"
 	"math"
 	"strings"
 )
@@ -113,6 +113,10 @@ func main() {
 
 	fmt.Println("\nDefault selection ticking time bomb:")
 	defaultSelectionExample()
+
+	fmt.Println("\nComparing trees...")
+	fmt.Println(Same(tree.New(1), tree.New(1)))
+	fmt.Println()
 }
 
 type ErrNegativeSqrt float64
