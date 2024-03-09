@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"strings"
 
 	"example.com/greetings"
 )
@@ -27,7 +26,7 @@ func main() {
 		fmt.Println(messages)
 	}
 
-  x := [4]int{1, 2, 3, 4}
-  fmt.Printf("%T\n", x)
-  fmt.Println(x)
+	x := [4]int{1, 2, 3, 4}
+	fmt.Printf("%T\n", x)
+	fmt.Println(x)
 }

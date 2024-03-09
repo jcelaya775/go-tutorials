@@ -1,4 +1,4 @@
-module example.com/hello
+module github.com/jcelaya775/go-tutorials/hello
 
 go 1.21.5
 
