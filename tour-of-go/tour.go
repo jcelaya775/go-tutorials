@@ -133,8 +133,9 @@ func main() {
 	time.Sleep(1 * time.Second)
 	fmt.Println(safeCounter.Value("somekey"))
 
+	wg.Add(1)
 	Crawl("https://golang.org/", 4, fetcher)
-	time.Sleep(time.Second)
+	wg.Wait()
 }
 
 type ErrNegativeSqrt float64

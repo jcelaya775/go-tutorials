@@ -13,10 +13,12 @@ type Fetcher interface {
 
 var visitedUrls = make(Cache) // just a concurrency-safe map w/ get() & get() methods
 var mu sync.Mutex
+var wg sync.WaitGroup
 
 // Crawl uses fetcher to recursively crawl
 // pages starting with url, to a maximum of depth.
 func Crawl(url string, depth int, fetcher Fetcher) {
+	defer wg.Done()
 	if visitedUrls.get(url) == true {
 		fmt.Printf("Already visited %v. Skipping...\n", url)
 		return
@@ -34,6 +36,7 @@ func Crawl(url string, depth int, fetcher Fetcher) {
 	}
 	fmt.Printf("Found: %s %q\n", body, urls)
 	for _, u := range urls {
+		wg.Add(1)
 		go Crawl(u, depth-1, fetcher)
 	}
 	return
