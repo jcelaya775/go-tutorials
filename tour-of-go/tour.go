@@ -2,11 +2,14 @@ package main
 
 import (
 	"fmt"
-	"golang.org/x/tour/tree"
 	"image"
 	"image/color"
+	"time"
+
 	"math"
 	"strings"
+
+	"golang.org/x/tour/tree"
 )
 
 func main() {
@@ -117,6 +120,18 @@ func main() {
 	fmt.Println("\nComparing trees...")
 	fmt.Println(Same(tree.New(1), tree.New(1)))
 	fmt.Println()
+
+	// In this example, the counter makes sure that only one goroutine can access the counter
+	// at any given time
+	safeCounter := SafeCounter{v: make(map[string]int)}
+	for i := 0; i < 1000; i++ {
+		go safeCounter.Inc("somekey")
+	}
+
+	// NOTE: Once the last goroutine is launched, the program will resume and exit, even if the
+	// goroutines are stil running (which will be aborted). So, we will wait for the program to finish.
+	time.Sleep(1 * time.Second)
+	fmt.Println(safeCounter.Value("somekey"))
 }
 
 type ErrNegativeSqrt float64

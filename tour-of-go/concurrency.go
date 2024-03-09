@@ -61,13 +61,15 @@ func fibonacciSelect(c, quit chan int) {
 // Default Selection
 func defaultSelectionExample() {
 	tick := time.Tick(100 * time.Millisecond)
-	boom := time.After(500 * time.Millisecond)
+	boom := time.After(1000 * time.Millisecond)
 	for {
 		select {
-		case <-tick:
+		case currentTime := <-tick:
 			fmt.Println("Tick.")
-		case <-boom:
+			fmt.Println(currentTime.Second())
+		case endTime := <-boom:
 			fmt.Println("BOOM!")
+			fmt.Println(endTime.Second())
 			return
 		default:
 			fmt.Println("    .")
