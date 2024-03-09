@@ -132,6 +132,9 @@ func main() {
 	// goroutines are stil running (which will be aborted). So, we will wait for the program to finish.
 	time.Sleep(1 * time.Second)
 	fmt.Println(safeCounter.Value("somekey"))
+
+	Crawl("https://golang.org/", 4, fetcher)
+	time.Sleep(time.Second)
 }
 
 type ErrNegativeSqrt float64
