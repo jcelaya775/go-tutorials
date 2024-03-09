@@ -11,23 +11,18 @@ type Fetcher interface {
 	Fetch(url string) (body string, urls []string, err error)
 }
 
-var visitedUrls map[string]bool = make(map[string]bool)
+var visitedUrls = make(Cache) // just a concurrency-safe map w/ get() & get() methods
 var mu sync.Mutex
 
 // Crawl uses fetcher to recursively crawl
 // pages starting with url, to a maximum of depth.
 func Crawl(url string, depth int, fetcher Fetcher) {
-	mu.Lock()
-	visitedUrl := visitedUrls[url]
-	mu.Unlock()
-	if visitedUrl {
+	if visitedUrls.get(url) == true {
 		fmt.Printf("Already visited %v. Skipping...\n", url)
 		return
 	}
 	fmt.Printf("Crawling %v...\n", url)
-	mu.Lock()
-	visitedUrls[url] = true
-	mu.Unlock()
+	visitedUrls.set(url, true)
 
 	if depth <= 0 {
 		return
@@ -49,6 +44,20 @@ type fakeFetcher map[string]*fakeResult
 type fakeResult struct {
 	body string
 	urls []string
+}
+
+type Cache map[string]bool
+
+func (cache Cache) get(value string) bool {
+	mu.Lock()
+	defer mu.Unlock()
+	return cache[value]
+}
+
+func (cache Cache) set(key string, value bool) {
+	mu.Lock()
+	defer mu.Unlock()
+	cache[key] = value
 }
 
 func (f fakeFetcher) Fetch(url string) (string, []string, error) {
