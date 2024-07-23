@@ -2,14 +2,12 @@ package main
 
 import (
 	"fmt"
+	"golang.org/x/tour/tree"
 	"image"
 	"image/color"
-	"time"
-
 	"math"
 	"strings"
-
-	"golang.org/x/tour/tree"
+	"time"
 )
 
 func main() {
@@ -40,7 +38,7 @@ func main() {
 	fmt.Println(Sqrt(2))
 	fmt.Println(Sqrt(-2))
 
-	// A Reader populates a byte slice with data.
+	// A Reader populates a byte slice with data via Read()
 	myBuffer := make([]byte, 25)
 	s := strings.NewReader("Lbh penpxrq gur pbqr!")
 	rot13 := rot13Reader{s}
